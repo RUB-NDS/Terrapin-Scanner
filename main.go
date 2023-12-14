@@ -239,7 +239,7 @@ func performVulnerabilityScan(address string, scanMode ScanMode) (*TerrapinVulne
 func formatAddress(address string, mode ScanMode) string {
 	formatted := strings.TrimSpace(address)
 	if mode == ServerScan && !strings.Contains(address, ":") {
-		address += ":22"
+		formatted = address + ":22"
 	} else if mode == ClientScan {
 		if address == "" {
 			formatted = "127.0.0.1:2222"
