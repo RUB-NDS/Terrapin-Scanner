@@ -171,16 +171,17 @@ func parseKexInit(pkt *BinaryPacket) (*SshMsgKexInit, error) {
 	return msg, nil
 }
 
-// Receives a single binary packet and tries to parse it as SSH_MSG_KEXINIT.
+// Receives binary packets until the remote's KEXINIT has been received and returns the parsed message.
 func receiveRemoteKexInit(conn net.Conn) (*SshMsgKexInit, error) {
-	pkt, err := readSinglePacket(conn)
-	if err != nil {
-		return nil, err
+	for {
+		pkt, err := readSinglePacket(conn)
+		if err != nil {
+			return nil, err
+		}
+		if pkt.Payload[0] == 20 {
+			return parseKexInit(pkt)
+		}
 	}
-	if pkt.Payload[0] != 20 {
-		return nil, fmt.Errorf("expected message type 20 (SSH_MSG_KEXINIT), but got type %d", pkt.Payload[0])
-	}
-	return parseKexInit(pkt)
 }
 
 // Performs a vulnerability scan to check whether the remote peer is likely to be vulnerable against prefix truncation.
