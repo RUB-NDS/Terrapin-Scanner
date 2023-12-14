@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Terrapin Scanner MacOS arm64" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Build">
+    <module name="Terrapin-Scanner" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="GOOS" value="darwin" />
+      <env name="GOARCH" value="arm64" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="github.com/RUB-NDS/Terrapin-Scanner" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/target" />
+    <option name="run" value="false" />
+    <method v="2" />
+  </configuration>
+</component>

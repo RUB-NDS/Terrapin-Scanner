@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Build for all" type="CompoundRunConfigurationType">
+    <toRun name="Terrapin Scanner Linux amd64" type="GoApplicationRunConfiguration" />
+    <toRun name="Terrapin Scanner Linux i386" type="GoApplicationRunConfiguration" />
+    <toRun name="Terrapin Scanner MacOS amd64" type="GoApplicationRunConfiguration" />
+    <toRun name="Terrapin Scanner MacOS arm64" type="GoApplicationRunConfiguration" />
+    <toRun name="Terrapin Scanner Windows amd64" type="GoApplicationRunConfiguration" />
+    <toRun name="Terrapin Scanner Windows i386" type="GoApplicationRunConfiguration" />
+    <method v="2" />
+  </configuration>
+</component>
