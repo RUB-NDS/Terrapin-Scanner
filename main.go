@@ -229,7 +229,7 @@ func performVulnerabilityScan(address string, scanMode ScanMode) (*TerrapinVulne
 			(slices.ContainsFunc(remoteKexInit.EncryptionAlgorithmsServerToClient, hasSuffix(CbcSuffix)) &&
 				slices.ContainsFunc(remoteKexInit.MacAlgorithmsServerToClient, hasSuffix(EtmSuffix)))
 	report.SupportsStrictKex = slices.Contains(remoteKexInit.KexAlgorithms, KexStrictIndicatorServer)
-	if scanMode == ServerScan {
+	if scanMode == ClientScan {
 		report.SupportsStrictKex = slices.Contains(remoteKexInit.KexAlgorithms, KexStrictIndicatorClient)
 	}
 	return report, nil
