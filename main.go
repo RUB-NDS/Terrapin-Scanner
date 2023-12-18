@@ -266,7 +266,9 @@ func printReport(report *TerrapinVulnerabilityReport) {
 	if report.IsVulnerable() {
 		fmt.Println("==> The scanned peer is VULNERABLE to Terrapin.")
 	} else {
-		fmt.Println("==> The scanned peer is NOT VULNERABLE to Terrapin. Glad to see this.")
+		fmt.Println("==> The scanned peer supports Terrapin mitigations and can establish")
+		fmt.Println("    connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
+		fmt.Println("    For strict key exchange to take effect, both peers must support it.")
 	}
 }
 
