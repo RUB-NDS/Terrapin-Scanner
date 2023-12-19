@@ -64,11 +64,11 @@ func (report *TerrapinVulnerabilityReport) IsVulnerable() bool {
 
 // Reads a single incoming, unencrypted binary packet from the provided connection.
 // Does not support reading encrypted binary packets.
-func readSinglePacket(conn net.Conn) (*BinaryPacket, error) {
+func readSinglePacket(connrw *bufio.ReadWriter) (*BinaryPacket, error) {
 	pkt := new(BinaryPacket)
 	// Read packet length
 	pktLengthBytes := make([]byte, 4)
-	if _, err := io.ReadFull(conn, pktLengthBytes); err != nil {
+	if _, err := io.ReadFull(connrw, pktLengthBytes); err != nil {
 		return nil, fmt.Errorf("error while reading packet length of binary packet: %w", err)
 	}
 	pkt.PacketLength = binary.BigEndian.Uint32(pktLengthBytes)
@@ -78,7 +78,7 @@ func readSinglePacket(conn net.Conn) (*BinaryPacket, error) {
 	}
 	// Read remaining packet
 	pktBytes := make([]byte, pkt.PacketLength)
-	if _, err := io.ReadFull(conn, pktBytes); err != nil {
+	if _, err := io.ReadFull(connrw, pktBytes); err != nil {
 		return nil, fmt.Errorf("error while reading binary packet: %w", err)
 	}
 	pkt.PaddingLength = pktBytes[0]
@@ -91,15 +91,17 @@ func readSinglePacket(conn net.Conn) (*BinaryPacket, error) {
 
 // Performs the SSH banner exchange by sending our banner and receiving the remote peer's banner.
 // Ignores leading ASCII lines not starting with SSH- (as per RFC4253 Sec. 4.2).
-func exchangeBanners(conn net.Conn) (string, error) {
-	reader := bufio.NewReader(conn)
+func exchangeBanners(connrw *bufio.ReadWriter) (string, error) {
 	// Send own banner first
-	if _, err := conn.Write([]byte("SSH-2.0-TerrapinVulnerabilityScanner\r\n")); err != nil {
+	if _, err := connrw.Write([]byte("SSH-2.0-TerrapinVulnerabilityScanner\r\n")); err != nil {
 		return "", fmt.Errorf("error while sending SSH banner: %w", err)
+	}
+	if err := connrw.Flush(); err != nil {
+		return "", fmt.Errorf("error while flushing outgoing connection buffer: %w", err)
 	}
 	// Receive banner from the remote peer
 	for {
-		line, err := reader.ReadString('\n')
+		line, err := connrw.ReadString('\n')
 		if err != nil {
 			return "", fmt.Errorf("error while reading from connection during banner exchange: %w", err)
 		}
@@ -172,9 +174,9 @@ func parseKexInit(pkt *BinaryPacket) (*SshMsgKexInit, error) {
 }
 
 // Receives binary packets until the remote's KEXINIT has been received and returns the parsed message.
-func receiveRemoteKexInit(conn net.Conn) (*SshMsgKexInit, error) {
+func receiveRemoteKexInit(connrw *bufio.ReadWriter) (*SshMsgKexInit, error) {
 	for {
-		pkt, err := readSinglePacket(conn)
+		pkt, err := readSinglePacket(connrw)
 		if err != nil {
 			return nil, err
 		}
@@ -205,12 +207,13 @@ func performVulnerabilityScan(address string, scanMode ScanMode) (*TerrapinVulne
 		}
 	}
 	defer conn.Close()
+	connrw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
-	remoteBanner, err := exchangeBanners(conn)
+	remoteBanner, err := exchangeBanners(connrw)
 	if err != nil {
 		return nil, err
 	}
-	remoteKexInit, err := receiveRemoteKexInit(conn)
+	remoteKexInit, err := receiveRemoteKexInit(connrw)
 	if err != nil {
 		return nil, err
 	}
