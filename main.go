@@ -241,13 +241,20 @@ func performVulnerabilityScan(address string, scanMode ScanMode) (*TerrapinVulne
 // Formats a socket address given the scan mode
 func formatAddress(address string, mode ScanMode) string {
 	formatted := strings.TrimSpace(address)
-	if mode == ServerScan && !strings.Contains(address, ":") {
-		formatted = address + ":22"
-	} else if mode == ClientScan {
-		if address == "" {
+	switch mode {
+	case ServerScan:
+		if (strings.HasPrefix(formatted, "[") && strings.HasSuffix(formatted, "]")) ||
+			!strings.Contains(formatted, ":") {
+			// Literal IPv6 / IPv4 address or hostname without explicit port, default to port 22
+			formatted += ":22"
+		}
+	case ClientScan:
+		if formatted == "" {
+			// No bind address and port given, default to binding 127.0.0.1 port 2222
 			formatted = "127.0.0.1:2222"
-		} else if !strings.Contains(address, ":") {
-			formatted = "127.0.0.1:" + address
+		} else if !strings.Contains(formatted, ":") {
+			// Port only, default to binding 127.0.0.1 only
+			formatted = "127.0.0.1:" + formatted
 		}
 	}
 	return formatted
