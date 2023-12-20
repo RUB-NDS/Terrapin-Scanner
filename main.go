@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/fatih/color"
 	"io"
 	"net"
 	"os"
@@ -271,26 +272,45 @@ func formatAddress(address string, mode ScanMode) string {
 	return formatted
 }
 
+func printColoredBoolean(value bool, ifTrue color.Attribute, ifFalse color.Attribute) {
+	if value {
+		color.Set(ifTrue)
+	} else {
+		color.Set(ifFalse)
+	}
+	fmt.Printf("%t\n", value)
+	color.Unset()
+}
+
 // Prints the report to stdout
 func printReport(report *TerrapinVulnerabilityReport, outputJson bool) error {
 	if !outputJson {
+		color.Set(color.FgBlue)
 		fmt.Println("================================================================================")
 		fmt.Println("==================================== Report ====================================")
 		fmt.Println("================================================================================")
+		color.Unset()
 		fmt.Println()
 		fmt.Printf("Remote Banner: %s\n", report.Banner)
 		fmt.Println()
-		fmt.Printf("ChaCha20-Poly1305 support:   %t\n", report.SupportsChaCha20)
-		fmt.Printf("CBC-EtM support:             %t\n", report.SupportsCbcEtm)
+		fmt.Print("ChaCha20-Poly1305 support:   ")
+		printColoredBoolean(report.SupportsChaCha20, color.FgYellow, color.FgGreen)
+		fmt.Print("CBC-EtM support:             ")
+		printColoredBoolean(report.SupportsCbcEtm, color.FgYellow, color.FgGreen)
 		fmt.Println()
-		fmt.Printf("Strict key exchange support: %t\n", report.SupportsStrictKex)
+		fmt.Print("Strict key exchange support: ")
+		printColoredBoolean(report.SupportsStrictKex, color.FgGreen, color.FgRed)
 		fmt.Println()
 		if report.IsVulnerable() {
-			fmt.Println("==> The scanned peer is VULNERABLE to Terrapin.")
+			color.Set(color.FgRed)
+			fmt.Println("The scanned peer is VULNERABLE to Terrapin.")
+			color.Unset()
 		} else {
-			fmt.Println("==> The scanned peer supports Terrapin mitigations and can establish")
-			fmt.Println("    connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
-			fmt.Println("    For strict key exchange to take effect, both peers must support it.")
+			color.Set(color.FgGreen)
+			fmt.Println("The scanned peer supports Terrapin mitigations and can establish")
+			fmt.Println("connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
+			fmt.Println("For strict key exchange to take effect, both peers must support it.")
+			color.Unset()
 		}
 	} else {
 		marshalledReport, err := json.MarshalIndent(report, "", "    ")
