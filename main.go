@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/binary"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -60,6 +61,16 @@ type TerrapinVulnerabilityReport struct {
 // IsVulnerable evaluates whether the report indicates vulnerability to prefix truncation.
 func (report *TerrapinVulnerabilityReport) IsVulnerable() bool {
 	return (report.SupportsChaCha20 || report.SupportsCbcEtm) && !report.SupportsStrictKex
+}
+
+func (report *TerrapinVulnerabilityReport) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		TerrapinVulnerabilityReport
+		Vulnerable bool
+	}{
+		*report,
+		report.IsVulnerable(),
+	})
 }
 
 // Reads a single incoming, unencrypted binary packet from the provided connection.
@@ -200,7 +211,7 @@ func performVulnerabilityScan(address string, scanMode ScanMode) (*TerrapinVulne
 			return nil, err
 		}
 		defer listener.Close()
-		fmt.Println("Listening for incoming client connection on", address)
+		fmt.Fprintln(os.Stderr, "Listening for incoming client connection on", address)
 
 		if conn, err = listener.Accept(); err != nil {
 			return nil, err
@@ -261,25 +272,34 @@ func formatAddress(address string, mode ScanMode) string {
 }
 
 // Prints the report to stdout
-func printReport(report *TerrapinVulnerabilityReport) {
-	fmt.Println("================================================================================")
-	fmt.Println("==================================== Report ====================================")
-	fmt.Println("================================================================================")
-	fmt.Println()
-	fmt.Printf("Remote Banner: %s\n", report.Banner)
-	fmt.Println()
-	fmt.Printf("ChaCha20-Poly1305 support:   %t\n", report.SupportsChaCha20)
-	fmt.Printf("CBC-EtM support:             %t\n", report.SupportsCbcEtm)
-	fmt.Println()
-	fmt.Printf("Strict key exchange support: %t\n", report.SupportsStrictKex)
-	fmt.Println()
-	if report.IsVulnerable() {
-		fmt.Println("==> The scanned peer is VULNERABLE to Terrapin.")
+func printReport(report *TerrapinVulnerabilityReport, outputJson bool) error {
+	if !outputJson {
+		fmt.Println("================================================================================")
+		fmt.Println("==================================== Report ====================================")
+		fmt.Println("================================================================================")
+		fmt.Println()
+		fmt.Printf("Remote Banner: %s\n", report.Banner)
+		fmt.Println()
+		fmt.Printf("ChaCha20-Poly1305 support:   %t\n", report.SupportsChaCha20)
+		fmt.Printf("CBC-EtM support:             %t\n", report.SupportsCbcEtm)
+		fmt.Println()
+		fmt.Printf("Strict key exchange support: %t\n", report.SupportsStrictKex)
+		fmt.Println()
+		if report.IsVulnerable() {
+			fmt.Println("==> The scanned peer is VULNERABLE to Terrapin.")
+		} else {
+			fmt.Println("==> The scanned peer supports Terrapin mitigations and can establish")
+			fmt.Println("    connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
+			fmt.Println("    For strict key exchange to take effect, both peers must support it.")
+		}
 	} else {
-		fmt.Println("==> The scanned peer supports Terrapin mitigations and can establish")
-		fmt.Println("    connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
-		fmt.Println("    For strict key exchange to take effect, both peers must support it.")
+		marshalledReport, err := json.MarshalIndent(report, "", "    ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(marshalledReport))
 	}
+	return nil
 }
 
 // Prints a short disclaimer to stdout
@@ -303,6 +323,10 @@ func main() {
 		"listen",
 		"",
 		"Address to bind to for client-side scans. Format: [host:]<port>")
+	jsonPtr := flag.Bool(
+		"json",
+		false,
+		"Outputs the scan result as json. Can be useful when calling the scanner from a script.")
 	helpPtr := flag.Bool(
 		"help",
 		false,
@@ -330,6 +354,10 @@ func main() {
 			panic(err)
 		}
 	}
-	printReport(report)
-	printDisclaimer()
+	if err := printReport(report, *jsonPtr); err != nil {
+		panic(err)
+	}
+	if !*jsonPtr {
+		printDisclaimer()
+	}
 }
