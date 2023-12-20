@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Version = "v1.1.0-dev"
+const Version = "v1.1.0"
 
 const ChaCha20Poly1305 = "chacha20-poly1305@openssh.com"
 const EtmSuffix = "-etm@openssh.com"
