@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"encoding/binary"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/fatih/color"
 	"io"
 	"net"
 	"os"
@@ -60,6 +62,16 @@ type TerrapinVulnerabilityReport struct {
 // IsVulnerable evaluates whether the report indicates vulnerability to prefix truncation.
 func (report *TerrapinVulnerabilityReport) IsVulnerable() bool {
 	return (report.SupportsChaCha20 || report.SupportsCbcEtm) && !report.SupportsStrictKex
+}
+
+func (report *TerrapinVulnerabilityReport) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		TerrapinVulnerabilityReport
+		Vulnerable bool
+	}{
+		*report,
+		report.IsVulnerable(),
+	})
 }
 
 // Reads a single incoming, unencrypted binary packet from the provided connection.
@@ -200,7 +212,7 @@ func performVulnerabilityScan(address string, scanMode ScanMode) (*TerrapinVulne
 			return nil, err
 		}
 		defer listener.Close()
-		fmt.Println("Listening for incoming client connection on", address)
+		fmt.Fprintln(os.Stderr, "Listening for incoming client connection on", address)
 
 		if conn, err = listener.Accept(); err != nil {
 			return nil, err
@@ -260,26 +272,54 @@ func formatAddress(address string, mode ScanMode) string {
 	return formatted
 }
 
-// Prints the report to stdout
-func printReport(report *TerrapinVulnerabilityReport) {
-	fmt.Println("================================================================================")
-	fmt.Println("==================================== Report ====================================")
-	fmt.Println("================================================================================")
-	fmt.Println()
-	fmt.Printf("Remote Banner: %s\n", report.Banner)
-	fmt.Println()
-	fmt.Printf("ChaCha20-Poly1305 support:   %t\n", report.SupportsChaCha20)
-	fmt.Printf("CBC-EtM support:             %t\n", report.SupportsCbcEtm)
-	fmt.Println()
-	fmt.Printf("Strict key exchange support: %t\n", report.SupportsStrictKex)
-	fmt.Println()
-	if report.IsVulnerable() {
-		fmt.Println("==> The scanned peer is VULNERABLE to Terrapin.")
+func printColoredBoolean(value bool, ifTrue color.Attribute, ifFalse color.Attribute) {
+	if value {
+		color.Set(ifTrue)
 	} else {
-		fmt.Println("==> The scanned peer supports Terrapin mitigations and can establish")
-		fmt.Println("    connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
-		fmt.Println("    For strict key exchange to take effect, both peers must support it.")
+		color.Set(ifFalse)
 	}
+	fmt.Printf("%t\n", value)
+	color.Unset()
+}
+
+// Prints the report to stdout
+func printReport(report *TerrapinVulnerabilityReport, outputJson bool) error {
+	if !outputJson {
+		color.Set(color.FgBlue)
+		fmt.Println("================================================================================")
+		fmt.Println("==================================== Report ====================================")
+		fmt.Println("================================================================================")
+		color.Unset()
+		fmt.Println()
+		fmt.Printf("Remote Banner: %s\n", report.Banner)
+		fmt.Println()
+		fmt.Print("ChaCha20-Poly1305 support:   ")
+		printColoredBoolean(report.SupportsChaCha20, color.FgYellow, color.FgGreen)
+		fmt.Print("CBC-EtM support:             ")
+		printColoredBoolean(report.SupportsCbcEtm, color.FgYellow, color.FgGreen)
+		fmt.Println()
+		fmt.Print("Strict key exchange support: ")
+		printColoredBoolean(report.SupportsStrictKex, color.FgGreen, color.FgRed)
+		fmt.Println()
+		if report.IsVulnerable() {
+			color.Set(color.FgRed)
+			fmt.Println("The scanned peer is VULNERABLE to Terrapin.")
+			color.Unset()
+		} else {
+			color.Set(color.FgGreen)
+			fmt.Println("The scanned peer supports Terrapin mitigations and can establish")
+			fmt.Println("connections that are NOT VULNERABLE to Terrapin. Glad to see this.")
+			fmt.Println("For strict key exchange to take effect, both peers must support it.")
+			color.Unset()
+		}
+	} else {
+		marshalledReport, err := json.MarshalIndent(report, "", "    ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(marshalledReport))
+	}
+	return nil
 }
 
 // Prints a short disclaimer to stdout
@@ -303,11 +343,20 @@ func main() {
 		"listen",
 		"",
 		"Address to bind to for client-side scans. Format: [host:]<port>")
+	jsonPtr := flag.Bool(
+		"json",
+		false,
+		"Outputs the scan result as json. Can be useful when calling the scanner from a script.")
+	noColor := flag.Bool(
+		"no-color",
+		false,
+		"Disables colored output.")
 	helpPtr := flag.Bool(
 		"help",
 		false,
 		"Prints this usage help to the user.")
 	flag.Parse()
+	color.NoColor = *noColor
 	if (*connectPtr == "" && *listenPtr == "") || *helpPtr {
 		flag.Usage()
 		printDisclaimer()
@@ -330,6 +379,10 @@ func main() {
 			panic(err)
 		}
 	}
-	printReport(report)
-	printDisclaimer()
+	if err := printReport(report, *jsonPtr); err != nil {
+		panic(err)
+	}
+	if !*jsonPtr {
+		printDisclaimer()
+	}
 }

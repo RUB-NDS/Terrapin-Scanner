@@ -31,3 +31,15 @@ This will download, compile, and install the Go package for your local system. T
 # The following command will listen for incoming connections on 127.0.0.1:2222
 ./Terrapin-Scanner --listen 2222
 ```
+
+The scanner supports outputting the scan result as json. To do so, provide the `--json` flag when calling the scanner. The output is structured as follows:
+
+```json
+{
+    "Banner": "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.5",
+    "SupportsChaCha20": true,
+    "SupportsCbcEtm": false,
+    "SupportsStrictKex": true,
+    "Vulnerable": false
+}
+```
