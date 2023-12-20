@@ -3,8 +3,9 @@
     <module name="Terrapin-Scanner" />
     <working_directory value="$PROJECT_DIR$" />
     <envs>
-      <env name="GOOS" value="darwin" />
       <env name="GOARCH" value="amd64" />
+      <env name="GOOS" value="darwin" />
+      <env name="CGO_ENABLED" value="0" />
     </envs>
     <kind value="PACKAGE" />
     <package value="github.com/RUB-NDS/Terrapin-Scanner" />
