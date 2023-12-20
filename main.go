@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+const Version = "v1.1.0-dev"
+
 const ChaCha20Poly1305 = "chacha20-poly1305@openssh.com"
 const EtmSuffix = "-etm@openssh.com"
 const CbcSuffix = "-cbc"
@@ -322,6 +324,11 @@ func printReport(report *TerrapinVulnerabilityReport, outputJson bool) error {
 	return nil
 }
 
+// Prints the version of this tool to stdout
+func printVersion() {
+	fmt.Println("Terrapin Vulnerability Scanner " + Version)
+}
+
 // Prints a short disclaimer to stdout
 func printDisclaimer() {
 	fmt.Println()
@@ -351,15 +358,24 @@ func main() {
 		"no-color",
 		false,
 		"Disables colored output.")
+	versionPtr := flag.Bool(
+		"version",
+		false,
+		"Prints the version of this tool.")
 	helpPtr := flag.Bool(
 		"help",
 		false,
 		"Prints this usage help to the user.")
 	flag.Parse()
 	color.NoColor = *noColor
-	if (*connectPtr == "" && *listenPtr == "") || *helpPtr {
+	if (*connectPtr == "" && *listenPtr == "" && !*versionPtr) || *helpPtr {
+		printVersion()
 		flag.Usage()
 		printDisclaimer()
+		os.Exit(0)
+	}
+	if *versionPtr {
+		printVersion()
 		os.Exit(0)
 	}
 	if *connectPtr != "" && *listenPtr != "" {
