@@ -347,11 +347,16 @@ func main() {
 		"json",
 		false,
 		"Outputs the scan result as json. Can be useful when calling the scanner from a script.")
+	noColor := flag.Bool(
+		"no-color",
+		false,
+		"Disables colored output.")
 	helpPtr := flag.Bool(
 		"help",
 		false,
 		"Prints this usage help to the user.")
 	flag.Parse()
+	color.NoColor = *noColor
 	if (*connectPtr == "" && *listenPtr == "") || *helpPtr {
 		flag.Usage()
 		printDisclaimer()
