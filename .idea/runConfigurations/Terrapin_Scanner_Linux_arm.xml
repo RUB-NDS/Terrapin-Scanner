@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Terrapin Scanner Linux arm" type="GoApplicationRunConfiguration" factoryName="Go Application" folderName="Build">
+    <module name="Terrapin-Scanner" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="GOARCH" value="arm" />
+      <env name="GOOS" value="linux" />
+      <env name="CGO_ENABLED" value="0" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="github.com/RUB-NDS/Terrapin-Scanner" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/target" />
+    <option name="run" value="false" />
+    <method v="2" />
+  </configuration>
+</component>
