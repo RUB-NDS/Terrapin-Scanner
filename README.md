@@ -6,7 +6,7 @@ The Terrapin Vulnerability Scanner is a small utility program written in Go, whi
 
 For convenience, we are providing pre-compiled binaries for all major desktop platforms. These can be found on the [Release page](https://github.com/RUB-NDS/Terrapin-Scanner/releases/latest).
 
-However, we understand that you might prefer building tools, that connect to your SSH server, yourself. To do this, ensure that you have at least Go v1.21 installed. To compile and install the Terrapin Vulnerability Scanner Go package, run the command below.
+However, we understand that you might prefer building tools, that connect to your SSH server, yourself. To do this, ensure that you have at least Go v1.18 installed. To compile and install the Terrapin Vulnerability Scanner Go package, run the command below.
 
 ```
 go install github.com/RUB-NDS/Terrapin-Scanner@latest
