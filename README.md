@@ -22,7 +22,7 @@ You can also build the Docker image yourself by running the commands below.
 
 ```bash
 git clone https://github.com/RUB-NDS/Terrapin-Scanner.git
-docker build -t terrapin-scanner .
+docker build -t terrapin-scanner Terrapin-Scanner
 ```
 
 ## Usage
