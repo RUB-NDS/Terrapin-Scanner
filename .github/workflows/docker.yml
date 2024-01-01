@@ -11,7 +11,6 @@ on:
 env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -34,6 +33,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Convert image name to lowercase
+        run: |
+          GITHUB_REPOSITORY="${{ github.repository }}"
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.0.0
@@ -82,6 +86,10 @@ jobs:
     needs:
       - build
     steps:
+      - name: Convert image name to lowercase
+        run: |
+          GITHUB_REPOSITORY="${{ github.repository }}"
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
       - name: Download digests
         uses: actions/download-artifact@v3
         with:
