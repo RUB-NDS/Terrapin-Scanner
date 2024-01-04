@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine
+FROM golang:1.18-alpine AS builder
 
 WORKDIR /app
 
@@ -10,5 +10,9 @@ COPY *.go ./
 COPY tscanner ./tscanner
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o Terrapin-Scanner
+
+FROM scratch
+
+COPY --from=builder /app/Terrapin-Scanner /app/Terrapin-Scanner
 
 ENTRYPOINT [ "/app/Terrapin-Scanner" ]
