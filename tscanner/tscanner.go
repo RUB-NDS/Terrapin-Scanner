@@ -7,11 +7,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"io"
 	"net"
 	"os"
 	"strings"
+	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 // ScanMode describes a scan mode for the scanner.
@@ -59,11 +61,12 @@ func (report *Report) MarshalJSON() ([]byte, error) {
 }
 
 // Scan performs a vulnerability scan to check whether the remote peer is likely to be vulnerable against prefix truncation.
-func Scan(address string, scanMode ScanMode, verbose bool) (*Report, error) {
+func Scan(address string, scanMode ScanMode, verbose bool, timeout *int) (*Report, error) {
 	var conn net.Conn
 	if scanMode == ServerScan {
 		var err error
-		if conn, err = net.Dial("tcp", address); err != nil {
+		dialer := net.Dialer{Timeout: time.Duration(*timeout) * time.Second}
+		if conn, err = dialer.Dial("tcp", address); err != nil {
 			return nil, err
 		}
 	} else if scanMode == ClientScan {

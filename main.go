@@ -127,6 +127,10 @@ func main() {
 		"help",
 		false,
 		"Prints this usage help to the user.")
+	timeoutPtr := flag.Int(
+		"timeout",
+		5,
+		"Timeout in seconds for the connection to the server.")
 	flag.Parse()
 	color.NoColor = *noColor
 	if (*connectPtr == "" && *listenPtr == "" && !*versionPtr) || *helpPtr {
@@ -146,13 +150,13 @@ func main() {
 	if *connectPtr != "" {
 		address := formatAddress(*connectPtr, tscanner.ServerScan)
 		var err error
-		if report, err = tscanner.Scan(address, tscanner.ServerScan, true); err != nil {
+		if report, err = tscanner.Scan(address, tscanner.ServerScan, true, timeoutPtr); err != nil {
 			panic(err)
 		}
 	} else if *listenPtr != "" {
 		address := formatAddress(*listenPtr, tscanner.ClientScan)
 		var err error
-		if report, err = tscanner.Scan(address, tscanner.ClientScan, true); err != nil {
+		if report, err = tscanner.Scan(address, tscanner.ClientScan, true, timeoutPtr); err != nil {
 			panic(err)
 		}
 	}
