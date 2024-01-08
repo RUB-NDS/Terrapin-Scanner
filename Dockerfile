@@ -10,11 +10,11 @@ COPY *.go ./
 COPY tscanner ./tscanner
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o Terrapin-Scanner
-
+RUN ["echo", "nobody:*:65534:65534:nobody:/_nonexistent:/bin/false", ">", "/etc/passwd"]
 FROM scratch
 
 COPY --from=builder /app/Terrapin-Scanner /app/Terrapin-Scanner
-
-USER nobody:nobody
+COPY --from=builder /etc/passwd /etc/passwd
+USER nobody
 
 ENTRYPOINT [ "/app/Terrapin-Scanner" ]
