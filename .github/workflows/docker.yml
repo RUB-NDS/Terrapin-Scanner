@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
 
 jobs:
   build:
