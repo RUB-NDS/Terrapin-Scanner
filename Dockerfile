@@ -17,4 +17,6 @@ COPY --from=builder /app/Terrapin-Scanner /app/Terrapin-Scanner
 COPY --from=builder /etc/passwd /etc/passwd
 USER nobody
 
+LABEL org.opencontainers.image.description See https://github.com/RUB-NDS/Terrapin-Scanner?tab=readme-ov-file#usage for usage instructions. 
+
 ENTRYPOINT [ "/app/Terrapin-Scanner" ]
