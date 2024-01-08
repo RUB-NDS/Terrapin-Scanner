@@ -2,8 +2,7 @@ name: Build Docker Container
 
 on:
   push:
-    branches: ["main"]
-    # Publish semver tags as releases.
+    branches: ['**']
     tags: ["*.*.*"]
   pull_request:
     branches: ["main"]
