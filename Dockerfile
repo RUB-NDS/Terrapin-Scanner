@@ -15,4 +15,6 @@ FROM scratch
 
 COPY --from=builder /app/Terrapin-Scanner /app/Terrapin-Scanner
 
+USER nobody:nobody
+
 ENTRYPOINT [ "/app/Terrapin-Scanner" ]
