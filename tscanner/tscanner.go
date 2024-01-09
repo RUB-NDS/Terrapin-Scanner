@@ -61,11 +61,17 @@ func (report *Report) MarshalJSON() ([]byte, error) {
 }
 
 // Scan performs a vulnerability scan to check whether the remote peer is likely to be vulnerable against prefix truncation.
-func Scan(address string, scanMode ScanMode, verbose bool, timeout *int) (*Report, error) {
+func Scan(address string, scanMode ScanMode, verbose bool) (*Report, error) {
+	return ScanWithTimeout(address, scanMode, verbose, 0)
+}
+
+// ScanWithTimeout performs a vulnerability scan with configurable timeout to check whether the remote peer
+// is likely to be vulnerable against prefix truncation.
+func ScanWithTimeout(address string, scanMode ScanMode, verbose bool, timeout int) (*Report, error) {
 	var conn net.Conn
 	if scanMode == ServerScan {
 		var err error
-		dialer := net.Dialer{Timeout: time.Duration(*timeout) * time.Second}
+		dialer := net.Dialer{Timeout: time.Duration(timeout) * time.Second}
 		if conn, err = dialer.Dial("tcp", address); err != nil {
 			return nil, err
 		}
