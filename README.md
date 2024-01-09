@@ -4,15 +4,26 @@ The Terrapin Vulnerability Scanner is a small utility program written in Go, whi
 
 ## Building
 
-For convenience, we are providing pre-compiled binaries for all major desktop platforms. These can be found on the [Release page](https://github.com/RUB-NDS/Terrapin-Scanner/releases/latest).
+For convenience, we are providing pre-compiled binaries for all major desktop platforms. These can be found on the [Release page](https://github.com/RUB-NDS/Terrapin-Scanner/releases/latest). We have also provided a Docker image that supports most of the major architectures. This image can be run as:
+
+```bash
+docker run -it ghcr.io/rub-nds/terrapin-scanner <args>
+```
 
 However, we understand that you might prefer building tools, that connect to your SSH server, yourself. To do this, ensure that you have at least Go v1.18 installed. To compile and install the Terrapin Vulnerability Scanner Go package, run the command below.
 
-```
+```bash
 go install github.com/RUB-NDS/Terrapin-Scanner@latest
 ```
 
 This will download, compile, and install the Go package for your local system. The compiled binary will become available at `$GOBIN/Terrapin-Scanner`. If the `GOBIN` environment variable is not set, Go will default to using `$GOPATH/bin` or `$HOME/go/bin`, depending on whether the `$GOPATH` environment variable is set.
+
+You can also build the Docker image yourself by running the commands below.
+
+```bash
+git clone https://github.com/RUB-NDS/Terrapin-Scanner.git
+docker build -t terrapin-scanner Terrapin-Scanner
+```
 
 ## Usage
 
