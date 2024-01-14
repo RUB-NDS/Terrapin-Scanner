@@ -1,6 +1,8 @@
 name: Build Docker Container
 
 on:
+  schedule:
+    - cron: "0 0 * * *"
   push:
     branches: ['**']
     tags: ["*.*.*"]
