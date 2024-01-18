@@ -47,6 +47,8 @@ The scanner supports outputting the scan result as json. To do so, provide the `
 
 ```json
 {
+    "RemoteAddr": "127.0.0.1:22",
+    "IsServer": true,
     "Banner": "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.5",
     "SupportsChaCha20": true,
     "SupportsCbcEtm": false,
