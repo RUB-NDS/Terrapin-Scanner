@@ -36,6 +36,8 @@ const kexStrictIndicatorServer = "kex-strict-s-v00@openssh.com"
 type Report struct {
 	// Contains the IP address and port of the scanned peer.
 	RemoteAddr string
+	// Indicates whether the scanned host was acting as client or server.
+	IsServer bool
 	// Banner contains the SSH banner of the remote peer.
 	Banner string
 	// SupportsChaCha20 indicates whether the remote peer supports the ChaCha20-Poly1305 cipher.
@@ -110,6 +112,7 @@ func ScanWithTimeout(address string, scanMode ScanMode, verbose bool, timeout in
 	}
 	report := new(Report)
 	report.RemoteAddr = conn.RemoteAddr().String()
+	report.IsServer = scanMode == ServerScan
 	report.Banner = remoteBanner
 	report.SupportsChaCha20 = slices.Contains(remoteKexInit.EncryptionAlgorithmsClientToServer, chaCha20Poly1305) ||
 		slices.Contains(remoteKexInit.EncryptionAlgorithmsServerToClient, chaCha20Poly1305)
