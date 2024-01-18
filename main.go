@@ -11,7 +11,7 @@ import (
 	"github.com/fatih/color"
 )
 
-const Version = "v1.1.3-dev"
+const Version = "v1.1.3"
 
 // Formats a socket address given the scan mode
 func formatAddress(address string, mode tscanner.ScanMode) string {
